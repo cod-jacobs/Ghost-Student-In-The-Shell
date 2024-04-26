@@ -16,10 +16,9 @@ def discussion_ai(OPENAI_API_KEY, user, course, topic_content):
     content = [
         {
             "type": "text", 
-            "text": "Respond with the context that you are a community college student.\n\n" +
-                    f"Additional information: my name is '{user.name}', course title is '{course.name}'\n\n" +
-                    f"Question data: {topic_content}\n\n" + 
-                    "Interpret the image(s) that came with the post as well."
+            "text": "Respond with the context that you are a community college student answering a short discussion question.\n\n" +
+                    f"Only use as reference information: my name is '{user.name}', course title is '{course.name}'\n\n" +
+                    f"Question data: {topic_content}\n\n"
         },
     ]
     for image in images:
@@ -42,7 +41,7 @@ def discussion_ai(OPENAI_API_KEY, user, course, topic_content):
         ]
     )
 
-    return response
+    return response.choices[0].message.content
 
 # Processing for each student
 def processing(CANVAS_API_URL, CANVAS_API_KEY, OPENAI_API_KEY, df):
@@ -61,17 +60,19 @@ def processing(CANVAS_API_URL, CANVAS_API_KEY, OPENAI_API_KEY, df):
     # Assignment processing for all courses
     for course in canvas.get_courses():
         for assignment in course.get_assignments():
-            if assignment.id not in df[df.user==user.id].assignmentid:
+            if assignment.id not in df[df.user==user.id].assignmentid.values:
+                print(f"Processing assignment {assignment.id} for user {user.id} in course {course.id}...", end=" ", flush=True)
                 if hasattr(assignment, "discussion_topic"):
                     assignment_type = "discussion"
                     discussion_topic = course.get_discussion_topic(assignment.discussion_topic["id"])
                     topic = discussion_topic.message
                     response = discussion_ai(OPENAI_API_KEY, user, course, topic)
-                    discussion_topic.post_entry(message=response.choices[0])
+                    discussion_topic.post_entry(message=response)
                 elif hasattr(assignment, "quiz_id"):
                     assignment_type="quiz"
                 else:
                     assignment_type=None
+
             
                 record = pd.DataFrame(
                     {
@@ -83,6 +84,7 @@ def processing(CANVAS_API_URL, CANVAS_API_KEY, OPENAI_API_KEY, df):
                 )
 
                 df = pd.concat([df, record], ignore_index=True)
+                print("DONE", flush=True)
     
     return df
             
@@ -107,7 +109,7 @@ def main(user_data):
     except:
         pass
 
-    user_data.to_csv(user_data)
+    data.to_csv(user_data, index=False)
 
 if __name__ == "__main__":
     main()
