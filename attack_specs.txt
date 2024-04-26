@@ -1,0 +1,20 @@
+Given a Canvas instance:
+
+At initial user setup:
+- Pass a set of .env CAVAS_API_KEY_# values for created Canvas users
+- Create a dataframe with the following columns for each user:
+    - Course, Module, AssignmentID, AssignmentType, Completion (incomplete=0, complete=1)
+
+Run a cron job twice a week that does the following:
+- Open dataframe
+- Gathers a list of courses (cross reference with existing AssignmentID)
+- For each course, process the new assignments:
+    - Add discussions to a list and save IDs to dataframe
+- For each assignment
+    - Pass bio info into completion (prompt engineer)
+    - Gather a response
+    - Submit response
+    - Mark Assignment as complete in dataframe 
+- Save dataframe for next cron job
+
+Notes: Cannot generate bios, resource is forbidden
