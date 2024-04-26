@@ -16,8 +16,9 @@ def discussion_ai(OPENAI_API_KEY, user, course, topic_content):
     content = [
         {
             "type": "text", 
-            "text": "Respond with the context that you are a community college student answering a short discussion question.\n\n" +
-                    f"Only use as reference information: my name is '{user.name}', course title is '{course.name}'\n\n" +
+            "text": "Respond with the context that you are a community college student answering a discussion assignment.\n\n" +
+                    f"Only use in response if it is part of question: student name - '{user.name}', course title - '{course.name}'\n\n" +
+                    "Use raw HTML to format response\n\n" + 
                     f"Question data: {topic_content}\n\n"
         },
     ]
